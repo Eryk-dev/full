@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  full-extractor-api:
+    build: .
+    container_name: full-extractor-api
+    ports:
+      - "5555:5555"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=5555
+      - API_DEBUG=false
+      - MAX_FILE_SIZE_MB=50
+      - LOG_LEVEL=INFO
+    volumes:
+      - /tmp:/tmp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5555/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Para desenvolvimento com reload automático
+  full-extractor-api-dev:
+    build: .
+    container_name: full-extractor-api-dev
+    ports:
+      - "5556:5555"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=5555
+      - API_DEBUG=true
+      - MAX_FILE_SIZE_MB=50
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - .:/app
+      - /tmp:/tmp
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5555", "--reload"]
+    profiles:
+      - dev 
